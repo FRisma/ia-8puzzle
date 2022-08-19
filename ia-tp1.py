@@ -1,24 +1,45 @@
 from models import Node
 import copy
+from pprint import pprint
+import sys
 
 initial_config = [
-    [1, 2, 3],
-    [5, 0, 6],
-    [4, 7, 8]
+    [2, 6, 5],
+    [1, 8, 3],
+    [0, 7, 4]
 ]
 
 goal_config = [
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 0]
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8]
 ]
 
+# initial_config = [
+#     [2, 8, 3],
+#     [1, 6, 4],
+#     [7, 0, 5]
+# ]
+#
+# goal_config = [
+#     [2, 8, 3],
+#     [1, 6, 4],
+#     [7, 5, 0]
+# ]
+
+
+def bidirectional_search():
+    initial_node = Node(config=initial_config, historical=[], level=0)
+    goal_node = Node(config=goal_config, historical=[], level=0)
+
+    recursive_check_bidirectional([initial_node], [goal_node])
 
 def start():
+    # BFS
     # Dado un estado inicial
     # Obtengo todos los posibles configs
     
-    initial_node = Node(config=initial_config, historical=[])
+    initial_node = Node(config=initial_config, historical=[], level=0)
     recursive_check([initial_node])
     
 
@@ -41,22 +62,59 @@ def recursive_check(nodes):
         recursive_check(children_nodes)
 
 
+def recursive_check_bidirectional(initial_nodes, goal_nodes):
+    initial_children_nodes = []
+    goal_children_nodes = []
+
+    children_nodes = []
+    for initial_node in initial_nodes:
+        initial_sub_nodes = get_children_nodes(initial_node)
+        for initial_sub_node in initial_sub_nodes:
+            initial_children_nodes.append(initial_sub_node)
+
+    new_node = goal_children_nodes
+    if len(goal_children_nodes) == 0:
+        new_node = [Node(config=goal_config, historical=[], level=0)]
+
+    is_solution, possible_node = check_any_node_is_solution_bidirectional(initial_children_nodes, new_node)
+    if is_solution:
+        new_historical = possible_node[0].historical + possible_node[1].config + possible_node[1].historical
+
+        print("Hemos encontrado el resultado y es ", new_historical)
+        sys.exit()
+
+    for goal_node in goal_nodes:
+        goal_sub_nodes = get_children_nodes(goal_node)
+        for goal_sub_node in goal_sub_nodes:
+            goal_children_nodes.append(goal_sub_node)
+
+    is_solution, possible_node = check_any_node_is_solution_bidirectional(initial_children_nodes, goal_children_nodes)
+    if is_solution:
+        new_historical = possible_node[0].historical + possible_node[1].config + possible_node[1].historical
+
+        print("Hemos encontrado el resultado y es ", new_historical)
+    else:
+        recursive_check_bidirectional(initial_children_nodes, goal_children_nodes)
+        #recursive_check(children_nodes)
+
+
 def get_children_nodes(node):
     children_nodes = []
     configs = get_children_configs(node.config)
     for config in configs:
-        print('historical', node.historical)
+        #print('historical', node.historical)
         new_historical_copy = copy.deepcopy(node.historical)
         new_historical_copy.append(node.config)
-        print('newHistoricalCopy', new_historical_copy)
-        # if node.historical is None:
-        #     newHistorical = [node.config]
-        #     print("New node historical ", newHistorical)
-        # else:
-        #     newHistorical = node.historical.append(node.config)
-        #     print("append node historical ", newHistorical)
+        #print('newHistoricalCopy', new_historical_copy)
 
-        children_nodes.append(Node(config=config, historical=new_historical_copy))
+        try:
+            if config != node.historical[-1]:
+                children_nodes.append(Node(config=config, historical=new_historical_copy, level=node.level + 1))
+            else:
+                print('skip node', config)
+        except Exception as e:
+            children_nodes.append(Node(config=config, historical=new_historical_copy, level=node.level + 1))
+
     return children_nodes
 
 
@@ -64,6 +122,15 @@ def check_any_node_is_solution(nodes):
     for node in nodes:
         if is_same_config(node.config, goal_config):
             return True, node
+    return False, None
+
+def check_any_node_is_solution_bidirectional(initial_nodes, goal_nodes):
+    print('')
+    for node in initial_nodes:
+        for goal_node in goal_nodes:
+            if is_same_config(goal_node.config, node.config):
+                return True, (node, goal_node)
+
     return False, None
 
 
@@ -86,7 +153,6 @@ def get_zero_neighbors(config):
 
 
 def switch_value(pos_value, config):
-    print('intercambiando el valor', pos_value)
     zero_index = find_index_value(0, config)
     item_index = find_index_value(pos_value, config)
     target_config = copy.deepcopy(config)
@@ -140,3 +206,4 @@ def find_index_value(value, config):
 
 if __name__ == '__main__':
     start()
+    #bidirectional_search()
