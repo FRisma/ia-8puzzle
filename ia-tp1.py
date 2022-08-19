@@ -1,3 +1,5 @@
+import random
+
 from models import Node
 import copy
 from pprint import pprint
@@ -10,9 +12,9 @@ initial_config = [
 ]
 
 goal_config = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8]
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 0]
 ]
 
 # initial_config = [
@@ -28,13 +30,24 @@ goal_config = [
 # ]
 
 
+def randomize(iterations):
+    node_to_check = Node(config=goal_config, historical=[], level=0)
+    print("El estado inicial es ", node_to_check.config)
+    for _ in range(iterations):
+        node_to_check = random_sub_node(node_to_check)
+
+    print("El nuevo estado es ", node_to_check.config)
+
+def random_sub_node(node):
+    children = get_children_nodes(node)
+    return random.choice(children)
 def bidirectional_search():
     initial_node = Node(config=initial_config, historical=[], level=0)
     goal_node = Node(config=goal_config, historical=[], level=0)
 
     recursive_check_bidirectional([initial_node], [goal_node])
 
-def start():
+def bfs():
     # BFS
     # Dado un estado inicial
     # Obtengo todos los posibles configs
@@ -205,5 +218,6 @@ def find_index_value(value, config):
 
 
 if __name__ == '__main__':
-    start()
+    #bfs()
     #bidirectional_search()
+    randomize(2)
