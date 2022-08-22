@@ -2,7 +2,6 @@ import random
 
 from models import Node
 import copy
-from pprint import pprint
 import sys
 
 initial_config = [
@@ -61,16 +60,11 @@ def recursive_check(nodes):
     for node in nodes:
         sub_nodes = get_children_nodes(node)
         for sub_node in sub_nodes:
-            # Chequear si es igual que algun antecesor para descartarlo
-            # if isSameConfig(initialChild, config):
-            #     print('continue')
-            #     continue
-        
             children_nodes.append(sub_node)
 
     is_solution, possible_node = check_any_node_is_solution(children_nodes)
     if is_solution:
-        print("Hemos encontrado el resultado y es ", possible_node.historical, possible_node.config)
+        print("Hemos encontrado el resultado y es {}{} y su nivel es {}:".format(possible_node.historical, possible_node.config, possible_node.level))
     else:
         recursive_check(children_nodes)
 
@@ -93,7 +87,7 @@ def recursive_check_bidirectional(initial_nodes, goal_nodes):
     if is_solution:
         new_historical = possible_node[0].historical + possible_node[1].config + possible_node[1].historical
 
-        print("Hemos encontrado el resultado y es ", new_historical)
+        print("Hemos encontrado el resultado y es {} y su nivel es {}:".format(new_historical, possible_node[0].level))
         sys.exit()
 
     for goal_node in goal_nodes:
@@ -104,8 +98,8 @@ def recursive_check_bidirectional(initial_nodes, goal_nodes):
     is_solution, possible_node = check_any_node_is_solution_bidirectional(initial_children_nodes, goal_children_nodes)
     if is_solution:
         new_historical = possible_node[0].historical + possible_node[1].config + possible_node[1].historical
+        print("Hemos encontrado el resultado y es {} y su nivel es {}:".format(new_historical, possible_node[0].level))
 
-        print("Hemos encontrado el resultado y es ", new_historical)
     else:
         recursive_check_bidirectional(initial_children_nodes, goal_children_nodes)
         #recursive_check(children_nodes)
@@ -138,7 +132,6 @@ def check_any_node_is_solution(nodes):
     return False, None
 
 def check_any_node_is_solution_bidirectional(initial_nodes, goal_nodes):
-    print('')
     for node in initial_nodes:
         for goal_node in goal_nodes:
             if is_same_config(goal_node.config, node.config):
