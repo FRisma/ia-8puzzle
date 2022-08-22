@@ -1,6 +1,7 @@
-import random
-
 from models import Node
+import random
+import numpy as np
+import matplotlib.pyplot as plt
 import copy
 import sys
 
@@ -209,6 +210,19 @@ def find_index_value(value, config):
     index_array = [(index, row.index(value)) for index, row in enumerate(config) if value in row]
     return index_array[0]
 
+def draw_config(config, title=None):
+    data = np.array(config)
+    fig, ax = plt.subplots()
+
+    if title:
+        fig.canvas.set_window_title(str(title))
+
+    for (i, j), z in np.ndenumerate(data):
+        ax.text(j, i, '{}'.format(z), ha='center', va='center', size=9)
+
+    plt.imshow(data, interpolation='none', cmap='Pastel1')
+    plt.axis('off')
+    plt.show()
 
 if __name__ == '__main__':
     #bfs()
