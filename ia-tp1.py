@@ -6,9 +6,9 @@ import copy
 import sys
 
 initial_config = [
-    [2, 6, 5],
-    [1, 8, 3],
-    [0, 7, 4]
+    [1, 2, 3],
+    [4, 5, 6],
+    [0, 7, 8]
 ]
 
 goal_config = [
@@ -30,31 +30,69 @@ goal_config = [
 # ]
 
 
-def randomize(iterations):
-    node_to_check = Node(config=goal_config, historical=[], level=0)
+def randomize(iterations=None, config=None):
+    node_to_check = Node(config=config, historical=[], level=0)
     print("El estado inicial es ", node_to_check.config)
+    print("El estado final es ", goal_config)
     for _ in range(iterations):
         node_to_check = random_sub_node(node_to_check)
+        print('Iteracion {} la configuracion actual es {}:'.format(_+1, node_to_check.config))
 
     print("El nuevo estado es ", node_to_check.config)
+    return node_to_check.config
 
 def random_sub_node(node):
     children = get_children_nodes(node)
     return random.choice(children)
+
 def bidirectional_search():
-    initial_node = Node(config=initial_config, historical=[], level=0)
+    new_config = randomize(iterations=10, config=initial_config)
+    initial_node = Node(config=new_config, historical=[], level=0)
     goal_node = Node(config=goal_config, historical=[], level=0)
 
     recursive_check_bidirectional([initial_node], [goal_node])
+
+def random_search():
+    new_config = randomize(iterations=1, config=initial_config)
+    initial_node = Node(config=new_config, historical=[], level=0)
+    step = 1
+    recursirve_random_check([initial_node], step)
+
 
 def bfs():
     # BFS
     # Dado un estado inicial
     # Obtengo todos los posibles configs
-    
-    initial_node = Node(config=initial_config, historical=[], level=0)
+    new_config = randomize(iterations=10, config=initial_config)
+    initial_node = Node(config=new_config, historical=[], level=0)
     recursive_check([initial_node])
     
+
+def recursirve_random_check(nodes, step):
+    children_nodes = []
+
+    if step > 1000:
+        print('Se supero las 1000 iteraciones')
+        sys.exit()
+
+    for node in nodes:
+        configs = get_children_configs(node.config)
+        random_config_index = random.randrange(0, len(configs), 1)
+
+        new_historical_copy = copy.deepcopy(node.historical)
+        new_historical_copy.append(node.config)
+        children_nodes.append(Node(config=configs[random_config_index], historical=new_historical_copy,
+                                   level=node.level + 1))
+        # if new_config
+    is_solution, possible_node = check_any_node_is_solution(children_nodes)
+    if is_solution:
+        print('Cantidad de iteraciones alcanzadas para encontrar el objetivo', step)
+        sys.exit()
+
+    else:
+        step += 1
+        recursirve_random_check(children_nodes, step)
+
 
 def recursive_check(nodes):
     children_nodes = []
@@ -89,6 +127,7 @@ def recursive_check_bidirectional(initial_nodes, goal_nodes):
         new_historical = possible_node[0].historical + possible_node[1].config + possible_node[1].historical
 
         print("Hemos encontrado el resultado y es {} y su nivel es {}:".format(new_historical, possible_node[0].level))
+
         sys.exit()
 
     for goal_node in goal_nodes:
@@ -118,8 +157,6 @@ def get_children_nodes(node):
         try:
             if config != node.historical[-1]:
                 children_nodes.append(Node(config=config, historical=new_historical_copy, level=node.level + 1))
-            else:
-                print('skip node', config)
         except Exception as e:
             children_nodes.append(Node(config=config, historical=new_historical_copy, level=node.level + 1))
 
@@ -225,6 +262,9 @@ def draw_config(config, title=None):
     plt.show()
 
 if __name__ == '__main__':
-    #bfs()
-    #bidirectional_search()
-    randomize(2)
+    bfs()
+    # bidirectional_search()
+
+    # random_search()
+    # randomize(iterations=50, config=goal_config)
+    sys.exit()
